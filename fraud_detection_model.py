@@ -64,10 +64,6 @@ def predict():
     # EDA features
     used_columns_9 += ['gender(num)', 'has_null', 'account_lifetime', 'is_group_1', 'is_group_2', 'is_group_3']
 
-    # use 
-    print('Used columns in this model:')
-    used_columns_9
-
     ext1 = ExtraTreesClassifier()
 
     # Make predictions
@@ -78,9 +74,6 @@ def predict():
     # Return the predictions as a response
     response = {'predictions': predictions.tolist(), 'precision_bias': precision_bias.tolist(), 'precision_var': precision_var.toList()}
     return jsonify(response)
-
-
-
 
 
 # Define Functions
@@ -112,13 +105,8 @@ def fill_missing_values(df_fraud, df_fraud_val):
 
     return df_fraud, df_fraud_val
 
-def map_job(job):
-    if job not in map:
-        return 'OTHERS'
-    return map[job]
-
-def remove_duplicate_categories(df_fraud, df_fraud_val):
-    map= {
+global MAP
+MAP= {
     'PELAJAR / MAHASISWA': 'PELAJAR / MAHASISWA',
     'MENGURUS RUMAH TANGGA': 'MENGURUS RUMAH TANGGA',
     'BELUM / TIDAK BEKERJA': 'BELUM / TIDAK BEKERJA',
@@ -206,6 +194,13 @@ def remove_duplicate_categories(df_fraud, df_fraud_val):
     np.nan : 'NULL'
     }
 
+def map_job(job):
+    if job not in MAP:
+        return 'OTHERS'
+    return MAP[job]
+
+def remove_duplicate_categories(df_fraud, df_fraud_val):
+    
     # Map job position for train dataset
     df_fraud['job_position'] = df_fraud['job_position'].apply(lambda s : map_job(s))
 
@@ -293,6 +288,8 @@ def add_new_feature(df_fraud,df_fraud_val):
     df_fraud_val['is_group_2'] = df_fraud_val['user_transaction_group'] == 2
     df_fraud_val['is_group_3'] = df_fraud_val['user_transaction_group'] == 3
 
+    return df_fraud, df_fraud_val
+
 def feature_encoding(df_fraud, df_fraud_val):
    #Label encoding
     mapping_gender = {
@@ -326,6 +323,8 @@ def feature_encoding(df_fraud, df_fraud_val):
                 columns=[f"job_position_{job}" for job in enc.categories_[0]],
                 index = df_fraud.index
                 )
+    return df_fraud, df_fraud_val
+
     
 def feature_scaling(df_fraud, df_fraud_val):
     scaled_cols = ['aqc_freq_prepaid_mobile', 'aqc_mean_prepaid_mobile_amount', 'aqc_freq_topup',
@@ -345,6 +344,8 @@ def feature_scaling(df_fraud, df_fraud_val):
 
         # # Also scale for test df
         df_fraud_val[f'std_{col}'] = scalers_std[col].transform(df_fraud_val[col].values.reshape(len(df_fraud_val), 1))
+
+    return df_fraud, df_fraud_val   
 
 global MODELS_EVAL
 MODELS_EVAL = dict()
